@@ -1,0 +1,31 @@
+---
+import Layout from '@layouts/Layout.astro';
+import About from '@components/home/About.astro';
+import Companies from '@components/home/Companies.astro';
+import Cta from '@components/home/Cta.astro';
+import Expertise from '@components/home/Expertise.astro';
+import Hero from '@components/home/Hero.astro';
+import Services from '@components/home/Services.astro';
+import { getLabels, locales, defaultLocale, prefixDefaultLocale } from '@i18n/utils';
+export { getStaticPaths } from '@i18n/utils';
+
+const base = import.meta.env.BASE_URL;
+const labels = getLabels(Astro.currentLocale, 'home');
+const currentLocale = Astro.currentLocale || defaultLocale;
+---
+
+<Layout description={labels.description} title={labels.title}>
+  <script slot="head" is:inline define:vars={{ base, currentLocale, locales, defaultLocale, prefixDefaultLocale }}>
+    if (currentLocale === defaultLocale && !prefixDefaultLocale) {
+      const preferred = localStorage.getItem('language') || navigator.language.split('-')[0];
+      const lang = preferred && locales.includes(preferred) ? preferred : defaultLocale;
+      lang !== currentLocale && location.replace(base + lang + '/');
+    }
+  </script>
+  <Hero />
+  <Services />
+  <Expertise />
+  <About />
+  <Companies />
+  <Cta />
+</Layout>
