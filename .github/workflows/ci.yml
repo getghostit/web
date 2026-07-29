@@ -1,0 +1,42 @@
+name: CI
+
+# Deployment is owned by Cloudflare Pages (configured in the Cloudflare dashboard, not here).
+# This workflow only verifies that the site type-checks, tests, and builds.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npx vitest run
+
+      # `npm run build` is `astro check && astro build`, followed by the CSP hash postbuild.
+      # ContactForm.astro requires these two variables to be set, so supply placeholders —
+      # this artifact is only type/build verification and is never deployed. The real values
+      # live in the Cloudflare Pages project settings.
+      - name: Type-check and build
+        run: npm run build
+        env:
+          BASIN_FORM_ID: ci-build-check
+          TURNSTILE_SITEKEY: ci-build-check

@@ -202,18 +202,31 @@ for (const { oldHashesMatches, newHashesMatches } of [scriptResult, styleResult]
 }
 
 if (replacements.length > 0) {
+  const appliedCounts = new Map(replacements.map(([oldStr]) => [oldStr, 0]));
+
   for (const file of htmlFiles) {
     let content = fs.readFileSync(file, 'utf8');
     let fileChanged = false;
     for (const [oldStr, newStr] of replacements) {
       if (content.includes(oldStr)) {
-        content = content.replace(oldStr, newStr);
+        content = content.replaceAll(oldStr, newStr);
+        appliedCounts.set(oldStr, appliedCounts.get(oldStr)! + 1);
         fileChanged = true;
       }
     }
     if (fileChanged) {
       fs.writeFileSync(file, content);
       updatedCount++;
+    }
+  }
+
+  // A replacement that matches nothing means the hash list in the emitted CSP no longer has
+  // the shape this script assumes. Failing here is essential: silently skipping the rewrite
+  // ships pages whose CSP blocks their own inline scripts.
+  for (const [oldStr, count] of appliedCounts) {
+    if (count === 0) {
+      console.error(`\x1b[31m✗ CSP hash rewrite matched no HTML file. Expected to find:\x1b[0m\n  ${oldStr}`);
+      process.exit(1);
     }
   }
 }
@@ -223,3 +236,49 @@ if (updatedCount > 0) {
 } else {
   console.log(`\x1b[32m✓ No changes to CSP hashes in HTML files.\x1b[0m`);
 }
+
+// 4. Verify every emitted page actually covers its own inline scripts and styles.
+// The rewrite above only reconciles the hashes this script manages; Astro contributes
+// others. This check is what proves the shipped pages are self-consistent, so it looks at
+// the final bytes on disk rather than trusting any earlier step.
+function getCspContent(html: string): string | null {
+  // Attribute order varies (the HTML minifier reorders them), and the policy itself contains
+  // single quotes such as 'self', so the content value has to be read delimiter-aware rather
+  // than with a naive [^"'] class.
+  const tag = html.match(/<meta[^>]*http-equiv=["']content-security-policy["'][^>]*>/i);
+  if (!tag) return null;
+  const content = tag[0].match(/content=(["'])([\s\S]*?)\1/i);
+  return content ? content[2] : null;
+}
+
+const violations: string[] = [];
+
+for (const file of htmlFiles) {
+  const html = fs.readFileSync(file, 'utf8');
+  const csp = getCspContent(html);
+
+  if (csp === null) {
+    violations.push(`${file}: no Content-Security-Policy meta tag`);
+    continue;
+  }
+
+  for (const [kind, contents] of [
+    ['script', extractScriptsFromHtmlString(html)],
+    ['style', extractStylesFromHtmlString(html)],
+  ] as const) {
+    for (const content of contents) {
+      const hash = getHash(content);
+      if (!csp.includes(hash)) {
+        violations.push(`${file}: inline ${kind} not covered by CSP (${hash})`);
+      }
+    }
+  }
+}
+
+if (violations.length > 0) {
+  console.error(`\x1b[31m✗ CSP would block ${violations.length} inline script(s)/style(s):\x1b[0m`);
+  for (const violation of violations) console.error(`  ${violation}`);
+  process.exit(1);
+}
+
+console.log(`\x1b[32m✓ Verified CSP covers all inline scripts and styles across ${htmlFiles.length} pages.\x1b[0m`);

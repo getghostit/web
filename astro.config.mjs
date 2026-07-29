@@ -7,7 +7,7 @@ import { defaultLocale, locales, prefixDefaultLocale } from './src/i18n/utils';
 
 // https://astro.build/config
 export default defineConfig({
-  // TODO: set to your production domain (used for sitemap + canonical URLs)
+  // Production domain (used for sitemap + canonical URLs)
   site: 'https://getghostit.com',
 
   fonts: [
@@ -37,6 +37,9 @@ export default defineConfig({
       entrypoint: '/src/scripts/entrypoint',
     }),
     sitemap({
+      // /styleguide sets <meta name="robots" content="noindex">, so listing it in the sitemap
+      // asks crawlers to index a page that forbids indexing. Keep the two consistent.
+      filter: (page) => !page.includes('/styleguide'),
       i18n: {
         defaultLocale,
         locales: Object.fromEntries(locales.map((locale) => [locale, locale])),

@@ -7,8 +7,24 @@ import { getLabels, defaultLocale } from '@i18n/utils';
 const labels = getLabels(Astro.currentLocale, 'contactForm');
 const currentLocale = Astro.currentLocale || defaultLocale;
 
-const basinFormId = import.meta.env.BASIN_FORM_ID;
-const turnstileSiteKey = import.meta.env.TURNSTILE_SITEKEY;
+// These are build-time values. If they are missing they get inlined as the string
+// 'undefined', which silently ships a form posting to https://usebasin.com/f/undefined
+// and a Turnstile widget that never renders. Fail the build instead.
+// import.meta.env member access is statically replaced by Vite, so the value has to be
+// read with a literal key and only then validated.
+function requireEnv(name: string, value: string | undefined): string {
+  if (!value || value === 'undefined') {
+    throw new Error(
+      `Missing required environment variable ${name}. ` +
+        `Set it in your .env file locally (see .env.example) and in the Cloudflare Pages ` +
+        `project settings for the deployed site, then rebuild.`
+    );
+  }
+  return value;
+}
+
+const basinFormId = requireEnv('BASIN_FORM_ID', import.meta.env.BASIN_FORM_ID);
+const turnstileSiteKey = requireEnv('TURNSTILE_SITEKEY', import.meta.env.TURNSTILE_SITEKEY);
 ---
 
 <section class="py-16 sm:py-20" x-data={`contactForm('${turnstileSiteKey}')`}>
