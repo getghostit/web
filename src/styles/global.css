@@ -27,16 +27,6 @@
   --font-*: initial;
   --font-sans: var(--font-inter);
 
-  --animate-marquee: marquee 30s linear infinite;
-
-  @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-100%);
-    }
-  }
 }
 
 @utility bg-primary {
