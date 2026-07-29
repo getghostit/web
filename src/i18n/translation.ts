@@ -172,17 +172,6 @@ export interface Translation {
     title: string;
     description: string;
   };
-  pricingTable: {
-    pricings: Array<{
-      name: string;
-      description: string;
-      isFlagged: boolean;
-      periodicity: string;
-      price: string;
-      action: string;
-      features: string[];
-    }>;
-  };
   legal: {
     description: string;
     title: string;
