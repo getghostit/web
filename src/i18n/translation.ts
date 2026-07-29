@@ -209,7 +209,7 @@ export interface Translation {
     hostingLogsText: string;
     dataRecipientsHeading: string;
     dataRecipientsIntro: string;
-    githubRecipient: string;
+    hostingRecipient: string;
     basinRecipient: string;
     cloudflareRecipient: string;
     dataTransfersText: string;
