@@ -19,6 +19,7 @@ export interface Translation {
     p1: string;
     p2: string;
     p3: string;
+    p4: string;
     aboutImgAlt: string;
     stats: Array<{
       name: string;
@@ -30,17 +31,8 @@ export interface Translation {
     members: Array<{
       name: string;
       job: string;
+      linkedin: string;
     }>;
-  };
-  aboutValues: {
-    title: string;
-    values: Array<
-      Array<{
-        ref: string;
-        name: string;
-        description: string;
-      }>
-    >;
   };
   contact: {
     description: string;
@@ -83,13 +75,6 @@ export interface Translation {
     title: string;
     description: string;
     cta: string;
-  };
-  homeCompanies: {
-    title: string;
-    companies: Array<{
-      id: string;
-      name: string;
-    }>;
   };
   homeCta: {
     title: string;
@@ -194,7 +179,7 @@ export interface Translation {
     dataProcessorsItem: string;
     userRightsItem: string;
     contactRightsText: string;
-    cnilComplaintItem: string;
+    complaintItem: string;
     privacyPolicyPromptText: string;
     privacyPolicyLink: string;
     cookiesHeading: string;
@@ -239,7 +224,7 @@ export interface Translation {
     rightToObjection: string;
     rightToPortability: string;
     exerciseRightsPrompt: string;
-    cnilComplaintText: string;
+    complaintText: string;
     cookiesHeading: string;
     cookiesText: string;
   };

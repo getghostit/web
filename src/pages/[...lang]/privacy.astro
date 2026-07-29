@@ -65,7 +65,7 @@ const currentLocale = Astro.currentLocale || defaultLocale;
         <a href={getRelativeLocaleUrl(currentLocale, '/contact')} class="text-link font-bold">
           {labels.contactFormLink}
         </a>
-        <span set:html={labels.cnilComplaintText} />
+        <span set:html={labels.complaintText} />
       </p>
       <h2 class="mt-12 mb-6 text-xl font-medium sm:text-2xl">{labels.cookiesHeading}</h2>
       <p class="mb-4">{labels.cookiesText}</p>
